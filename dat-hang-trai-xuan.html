@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đặt món hội trại</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
+    nav { background: #222; padding: 10px; display: flex; justify-content: space-around; position: sticky; top: 0; }
+    nav button { background: none; border: none; color: #fff; font-size: 14px; }
+    .container { padding: 12px; }
+    .card { background: #fff; padding: 14px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    h2 { margin: 0 0 10px; font-size: 18px; }
+    label { display: block; margin-top: 8px; font-weight: 600; font-size: 14px; }
+    select, input { width: 100%; padding: 10px; margin-top: 4px; font-size: 14px; border-radius: 6px; border: 1px solid #ccc; }
+    button { width: 100%; padding: 12px; margin-top: 12px; font-size: 15px; border: none; border-radius: 8px; background: #ff5722; color: #fff; }
+    button.secondary { background: #555; }
+    .hidden { display: none; }
+    .qty { display:flex; align-items:center; gap:10px; margin-top:6px; justify-content:center; }
+    .qty button { width: 36px; height: 36px; border-radius: 50%; padding: 0; }
+    .qty input { width: 60px; text-align: center; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+    th, td { border-bottom:1px solid #ddd; padding:6px; text-align:left; }
+    th { background:#fafafa; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <button type="button" onclick="showSection('single')">Món lẻ</button>
+  <button type="button" onclick="showSection('combo')">Combo</button>
+  <button type="button" onclick="showSection('cart')">Giỏ hàng</button>
+</nav>
+
+<div class="container">
+
+<div class="card" id="customerCard">
+  <h2>Thông tin nhận hàng</h2>
+  <label>Tên khách *</label>
+  <input id="customerName" />
+
+  <label>Lớp / địa chỉ lớp *</label>
+  <input id="classAddress" />
+
+  <label>Tên trại *</label>
+  <input id="campName" />
+
+  <label>Khung giờ nhận *</label>
+  <select id="pickupTime">
+    <option value="">-- Chọn --</option>
+    <option>8:00 – 9:00</option>
+    <option>9:00 – 10:00</option>
+    <option>10:00 – 11:00</option>
+    <option>13:00 – 14:00</option>
+    <option>14:00 – 15:00</option>
+  </select>
+
+  <button class="secondary" onclick="saveCustomer()">Lưu thông tin</button>
+</div>
+
+<div id="single" class="card">
+  <h2>Món lẻ</h2>
+  <label>Món</label>
+  <select id="singleItem" onchange="toggleDrinkOptions(this.value)">
+    <option>Gà</option>
+    <option>Pudding trứng</option>
+    <option>Pudding hồng trà</option>
+    <option>Tàu hũ Singapore</option>
+    <option>Trà chanh dây</option>
+  </select>
+
+  <div id="drinkOptions" class="hidden">
+    <label>Đá (cho đồ uống)</label>
+    <select id="singleIce"><option>Không đá</option><option>Ít đá</option><option>Đá bình thường</option></select>
+    <label>Thạch (cho đồ uống)</label>
+    <select id="singleJelly"><option>Không thạch</option><option>Thạch bình thường</option></select>
+  </div>
+
+  <label>Số lượng</label>
+  <div class="qty">
+    <button onclick="changeQty('singleQty',-1)">-</button>
+    <input id="singleQty" type="number" value="1" min="1" />
+    <button onclick="changeQty('singleQty',1)">+</button>
+  </div>
+
+  <button onclick="addSingleToCart()">Thêm vào giỏ</button>
+</div>
+
+<div id="combo" class="card hidden">
+  <h2>Combo</h2>
+  <label>Chọn combo</label>
+  <select id="comboType" onchange="renderComboOptions()">
+    <option value="">-- Chọn --</option>
+    <option>Combo 1</option>
+    <option>Combo 2</option>
+    <option>Combo 3</option>
+  </select>
+
+  <div id="comboOptions"></div>
+
+  <label>Số lượng</label>
+  <div class="qty">
+    <button onclick="changeQty('comboQty',-1)">-</button>
+    <input id="comboQty" type="number" value="1" min="1" />
+    <button onclick="changeQty('comboQty',1)">+</button>
+  </div>
+
+  <button onclick="addComboToCart()">Thêm vào giỏ</button>
+</div>
+
+<div id="cart" class="card hidden">
+  <h2>Giỏ hàng</h2>
+  <table>
+    <thead><tr><th>Loại</th><th>Món</th><th>SL</th><th></th></tr></thead>
+    <tbody id="cartTable"></tbody>
+  </table>
+  <button onclick="submitCart()">Xác nhận đặt món</button>
+</div>
+
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwPHqwu2dIwvCnbd2nWiYh7l5M-Ud_yzs30qrA4q7SZ2sM5YBbY8k8-qjvQXsDMygxZRA/exec';
+let cart = [];
+
+window.onload = () => {
+  const c = JSON.parse(localStorage.getItem('customer'));
+  if(c){
+    customerName.value=c.ten;
+    classAddress.value=c.lop;
+    campName.value=c.trai;
+    pickupTime.value=c.gio;
+  }
+};
+
+function saveCustomer(){
+  if(!customerName.value||!classAddress.value||!campName.value||!pickupTime.value){
+    alert('Vui lòng nhập đủ thông tin');
+    return;
+  }
+  localStorage.setItem('customer',JSON.stringify({
+    ten:customerName.value,
+    lop:classAddress.value,
+    trai:campName.value,
+    gio:pickupTime.value
+  }));
+  alert('Đã lưu thông tin');
+}
+
+function showSection(id){
+  ['single','combo','cart'].forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='cart') renderCart();
+}
+
+function toggleDrinkOptions(v){
+  drinkOptions.classList.toggle('hidden',v!=='Trà chanh dây');
+}
+
+function changeQty(id,d){
+  const i=document.getElementById(id);
+  i.value=Math.max(1,parseInt(i.value||1)+d);
+}
+
+function renderComboOptions(){
+  comboOptions.innerHTML='';
+
+  if(['Combo 1','Combo 3'].includes(comboType.value)){
+    comboOptions.innerHTML+=`
+      <label>Đá (cho đồ uống)</label>
+      <select id="comboIce">
+        <option>Không đá</option>
+        <option>Ít đá</option>
+        <option>Đá bình thường</option>
+      </select>
+      <label>Thạch (cho đồ uống)</label>
+      <select id="comboJelly">
+        <option>Không thạch</option>
+        <option>Thạch bình thường</option>
+      </select>`;
+  }
+
+  if(['Combo 1','Combo 2'].includes(comboType.value)){
+    comboOptions.innerHTML+=`
+      <label>Tráng miệng</label>
+      <select id="comboDessert">
+        <option>Pudding trứng</option>
+        <option>Pudding hồng trà</option>
+        <option>Tàu hũ Singapore</option>
+      </select>`;
+  }
+}
+
+function addSingleToCart(){
+  cart.push({
+    loai:'Món lẻ',
+    noiDung: singleItem.value + (singleItem.value==='Trà chanh dây'
+      ? ` (${singleIce.value}, ${singleJelly.value})`
+      : ''),
+    soLuong: singleQty.value
+  });
+  alert('Đã thêm');
+}
+
+function addComboToCart(){
+  const iceEl = document.getElementById('comboIce');
+  const jellyEl = document.getElementById('comboJelly');
+  const dessertEl = document.getElementById('comboDessert');
+
+  cart.push({
+    loai:'Combo',
+    noiDung: comboType.value,
+    chiTiet:{
+      trangmieng: dessertEl ? dessertEl.value : '',
+      da: iceEl ? iceEl.value : '',
+      thach: jellyEl ? jellyEl.value : ''
+    },
+    soLuong: comboQty.value
+  });
+  alert('Đã thêm');
+}
+
+function renderCart(){
+  cartTable.innerHTML='';
+  cart.forEach((c,i)=>{
+    cartTable.innerHTML+=`
+      <tr>
+        <td>${c.loai}</td>
+        <td>${c.noiDung}</td>
+        <td>${c.soLuong}</td>
+        <td><button onclick="cart.splice(${i},1);renderCart()">Xóa</button></td>
+      </tr>`;
+  });
+}
+
+function submitCart(){
+  const customer = JSON.parse(localStorage.getItem('customer'));
+  if(!customer){ alert('Vui lòng lưu thông tin nhận hàng trước'); return; }
+  if(cart.length===0){ alert('Giỏ hàng trống'); return; }
+
+  fetch(SHEET_URL,{
+    method:'POST',
+    mode:'no-cors',
+    body: JSON.stringify({customer,cart})
+  })
+  .then(()=>{
+    window.location.href='thankyou.html';
+  })
+  .catch(err=>{
+    console.error('Fetch error:', err);
+    alert('Không gửi được đơn hàng. Vui lòng kiểm tra kết nối mạng.');
+  });
+}
+
+// Basic runtime tests
+console.assert(typeof renderComboOptions === 'function','renderComboOptions should exist');
+console.assert(typeof addComboToCart === 'function','addComboToCart should exist');
+console.assert(typeof submitCart === 'function','submitCart should exist');
+</script>
+</body>
+</html>
