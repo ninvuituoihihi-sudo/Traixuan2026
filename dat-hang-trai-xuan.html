@@ -246,22 +246,33 @@ function renderCart(){
 
 function submitCart(){
   const customer = JSON.parse(localStorage.getItem('customer'));
-  if(!customer){ alert('Vui lòng lưu thông tin nhận hàng trước'); return; }
-  if(cart.length===0){ alert('Giỏ hàng trống'); return; }
+  if(!customer){
+    alert('Vui lòng lưu thông tin nhận hàng trước');
+    return;
+  }
+  if(cart.length === 0){
+    alert('Giỏ hàng trống');
+    return;
+  }
 
   fetch(SHEET_URL,{
     method:'POST',
     mode:'no-cors',
-    body: JSON.stringify({customer,cart})
+    body: JSON.stringify({customer, cart})
   })
   .then(()=>{
-    window.location.href='thankyou.html';
+    // ✅ Xóa thông tin sau khi đặt xong
+    localStorage.removeItem('customer');
+    cart = [];
+
+    window.location.href = 'thankyou.html';
   })
   .catch(err=>{
     console.error('Fetch error:', err);
     alert('Không gửi được đơn hàng. Vui lòng kiểm tra kết nối mạng.');
   });
 }
+
 
 // Basic runtime tests
 console.assert(typeof renderComboOptions === 'function','renderComboOptions should exist');
@@ -270,6 +281,7 @@ console.assert(typeof submitCart === 'function','submitCart should exist');
 </script>
 </body>
 </html>
+
 
 
 
