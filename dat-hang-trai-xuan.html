@@ -24,4 +24,210 @@ button{
   border:none;
   border-radius:8px;
   background:#ff5722;
-  color:#fff
+  color:#fff;
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+button.secondary{background:#555}
+
+button:hover{
+  filter:brightness(1.08);
+  box-shadow:0 6px 12px rgba(0,0,0,.18);
+}
+button:active{
+  transform:scale(.96);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.25);
+}
+
+.hidden{display:none}
+.qty{display:flex;gap:10px;justify-content:center;margin-top:6px}
+.qty button{width:36px;height:36px;border-radius:50%;padding:0}
+
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}
+th{background:#fafafa}
+small{color:#555}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <button onclick="showSection('single')">Món lẻ</button>
+  <button onclick="showSection('combo')">Combo</button>
+  <button onclick="showSection('cart')">Giỏ hàng</button>
+</nav>
+
+<div class="container">
+
+<div class="card">
+<h2>Thông tin nhận hàng</h2>
+<label>Tên khách *</label><input id="customerName">
+<label>Lớp / địa chỉ lớp *</label><input id="classAddress">
+<label>Link Facebook *</label><input id="campName">
+<label>Khung giờ *</label>
+<select id="pickupTime">
+<option value="">-- Chọn --</option>
+<option>8:00 – 9:00</option>
+<option>9:00 – 10:00</option>
+<option>10:00 – 11:00</option>
+<option>13:00 – 14:00</option>
+<option>14:00 – 15:00</option>
+</select>
+<button class="secondary" onclick="saveCustomer()">Lưu thông tin</button>
+</div>
+
+<div id="single" class="card">
+<h2>Món lẻ</h2>
+<label>Món</label>
+<select id="singleItem" onchange="toggleDrink(this.value)">
+<option value="" disabled selected>Vui lòng chọn món</option>
+<option>Gà</option>
+<option>Pudding trứng</option>
+<option>Pudding hồng trà</option>
+<option>Tàu hũ Singapore</option>
+<option>Trà chanh dây</option>
+</select>
+
+<div id="drinkOpt" class="hidden">
+<label>Đá</label>
+<select id="singleIce"><option>Đá bình thường</option><option>Ít đá</option><option>Không đá</option></select>
+<label>Thạch</label>
+<select id="singleJelly"><option>Thạch bình thường</option><option>Không thạch</option></select>
+</div>
+
+<div class="qty">
+<button onclick="changeQty('singleQty',-1)">-</button>
+<input id="singleQty" type="number" value="1" min="1">
+<button onclick="changeQty('singleQty',1)">+</button>
+</div>
+
+<button onclick="addSingle()">Thêm vào giỏ</button>
+</div>
+
+<div id="combo" class="card hidden">
+<h2>Combo</h2>
+<select id="comboType" onchange="renderCombo()">
+<option value="" disabled selected>Vui lòng chọn combo</option>
+<option>Combo 1</option>
+<option>Combo 2</option>
+<option>Combo 3</option>
+</select>
+
+<div id="comboOpt"></div>
+
+<div class="qty">
+<button onclick="changeQty('comboQty',-1)">-</button>
+<input id="comboQty" type="number" value="1" min="1">
+<button onclick="changeQty('comboQty',1)">+</button>
+</div>
+
+<button onclick="addCombo()">Thêm vào giỏ</button>
+</div>
+
+<div id="cart" class="card hidden">
+<h2>Giỏ hàng</h2>
+<table>
+<thead><tr><th>Loại</th><th>Món</th><th>SL</th><th></th></tr></thead>
+<tbody id="cartTable"></tbody>
+</table>
+<button onclick="submitCart()">Xác nhận đặt món</button>
+</div>
+
+</div>
+
+<script>
+const SHEET_URL='PASTE_WEB_APP_URL';
+let cart=[];
+
+function showSection(id){
+['single','combo','cart'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+if(id==='cart') renderCart();
+}
+
+function saveCustomer(){
+if(!customerName.value||!classAddress.value||!campName.value||!pickupTime.value)
+return alert('Nhập đủ thông tin');
+localStorage.setItem('customer',JSON.stringify({
+ten:customerName.value,lop:classAddress.value,trai:campName.value,gio:pickupTime.value
+}));
+alert('Đã lưu');
+}
+
+function toggleDrink(v){
+drinkOpt.classList.toggle('hidden',v!=='Trà chanh dây');
+}
+
+function changeQty(id,d){
+const i=document.getElementById(id);
+i.value=Math.max(1,Number(i.value)+d);
+}
+
+function renderCombo(){
+comboOpt.innerHTML='';
+if(['Combo 1','Combo 3'].includes(comboType.value)){
+comboOpt.innerHTML+=`
+<label>Đá</label><select id="cIce"><option>Đá bình thường</option><option>Ít đá</option><option>Không đá</option></select>
+<label>Thạch</label><select id="cJelly"><option>Thạch bình thường</option><option>Không thạch</option></select>`;
+}
+if(comboType.value==='Combo 1'){
+comboOpt.innerHTML+=`
+<label>Tráng miệng</label>
+<select id="d1"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>`;
+}
+if(comboType.value==='Combo 2'){
+comboOpt.innerHTML+=`
+<label>Tráng miệng 1</label><select id="d1"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>
+<label>Tráng miệng 2</label><select id="d2"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>`;
+}
+}
+
+function addSingle(){
+cart.push({loai:'Món lẻ',noiDung:singleItem.value,soLuong:singleQty.value});
+alert('Đã thêm');
+}
+
+function addCombo(){
+const desserts=[];
+if(window.d1) desserts.push(d1.value);
+if(window.d2) desserts.push(d2.value);
+cart.push({
+loai:'Combo',
+noiDung:comboType.value,
+chiTiet:{trangmieng:desserts,da:cIce?.value,thach:cJelly?.value},
+soLuong:comboQty.value
+});
+alert('Đã thêm');
+}
+
+function renderCart(){
+cartTable.innerHTML='';
+cart.forEach((c,i)=>{
+let detail='';
+if(c.chiTiet){
+detail=`<br><small>Tráng miệng: ${c.chiTiet.trangmieng.join(', ')}<br>Nước: ${c.chiTiet.da||''}, ${c.chiTiet.thach||''}</small>`;
+}
+cartTable.innerHTML+=`
+<tr>
+<td>${c.loai}</td>
+<td>${c.noiDung}${detail}</td>
+<td>${c.soLuong}</td>
+<td><button onclick="cart.splice(${i},1);renderCart()">Xóa</button></td>
+</tr>`;
+});
+}
+
+function submitCart(){
+const customer=JSON.parse(localStorage.getItem('customer'));
+if(!customer||!cart.length) return alert('Thiếu thông tin');
+fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({customer,cart})})
+.then(()=>{
+localStorage.clear();
+cart=[];
+location.href='thankyou.html';
+});
+}
+</script>
+</body>
+</html>
