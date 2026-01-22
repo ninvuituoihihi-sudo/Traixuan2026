@@ -4,16 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cảm ơn</title>
+
 <style>
-body{font-family:Arial;background:#f4f4f4;margin:0;display:flex;align-items:center;justify-content:center;height:100vh}
-.card{background:#fff;padding:30px;border-radius:12px;text-align:center}
-h1{color:#ff5722}
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+
+.card{
+  background:#fff;
+  padding:32px;
+  border-radius:14px;
+  text-align:center;
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+}
+
+h1{
+  color:#ff5722;
+  margin-bottom:10px;
+}
+
+p{
+  font-size:15px;
+  line-height:1.5;
+}
+
+.back-btn{
+  margin-top:22px;
+  padding:12px 22px;
+  font-size:15px;
+  border:none;
+  border-radius:999px;
+  background:#ff5722;
+  color:#fff;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  transition:transform .15s ease, box-shadow .15s ease, background .15s;
+  box-shadow:0 4px 10px rgba(255,87,34,.3);
+  position:relative;
+  overflow:hidden;
+}
+
+/* Hover */
+.back-btn:hover{
+  background:#e64a19;
+  box-shadow:0 6px 14px rgba(255,87,34,.35);
+}
+
+/* Click effect */
+.back-btn:active{
+  transform:scale(0.95);
+}
+
+/* Ripple effect */
+.back-btn::after{
+  content:'';
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:-100%;
+  background:rgba(255,255,255,0.25);
+  transform:skewX(-20deg);
+}
+
+.back-btn:active::after{
+  left:100%;
+  transition:left .4s ease;
+}
+
+.icon{
+  font-size:18px;
+}
 </style>
 </head>
+
 <body>
+
 <div class="card">
   <h1>Cảm ơn bạn!</h1>
-  <p>Đơn hàng đã được ghi nhận.<br>Chúc bạn Hội Trại Xuân thật vui vẻ 🌸</p>
+  <p>
+    Đơn hàng đã được ghi nhận.<br>
+    Chúc bạn Hội Trại Xuân thật vui vẻ 🌸
+  </p>
+
+  <button class="back-btn" onclick="window.location.href='dat-hang-trai-xuan.html'">
+    <span class="icon">←</span>
+    Quay lại đặt món
+  </button>
 </div>
+
 </body>
 </html>
