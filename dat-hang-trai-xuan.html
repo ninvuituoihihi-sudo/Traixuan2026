@@ -176,31 +176,56 @@ function changeQty(id,d){
 function renderComboOptions(){
   comboOptions.innerHTML='';
 
+  // Đồ uống
   if(['Combo 1','Combo 3'].includes(comboType.value)){
     comboOptions.innerHTML+=`
       <label>Đá (cho đồ uống)</label>
       <select id="comboIce">
-        <option>Không đá</option>
+        <option selected>Đá bình thường</option>
         <option>Ít đá</option>
-        <option>Đá bình thường</option>
+        <option>Không đá</option>
       </select>
+
       <label>Thạch (cho đồ uống)</label>
       <select id="comboJelly">
+        <option selected>Thạch bình thường</option>
         <option>Không thạch</option>
-        <option>Thạch bình thường</option>
-      </select>`;
+      </select>
+    `;
   }
 
-  if(['Combo 1','Combo 2'].includes(comboType.value)){
+  // Combo 1: 1 tráng miệng
+  if(comboType.value === 'Combo 1'){
     comboOptions.innerHTML+=`
       <label>Tráng miệng</label>
-      <select id="comboDessert">
+      <select id="comboDessert1">
         <option>Pudding trứng</option>
         <option>Pudding hồng trà</option>
         <option>Tàu hũ Singapore</option>
-      </select>`;
+      </select>
+    `;
+  }
+
+  // Combo 2: 2 tráng miệng (KHÔNG TRÙNG)
+  if(comboType.value === 'Combo 2'){
+    comboOptions.innerHTML+=`
+      <label>Tráng miệng 1</label>
+      <select id="comboDessert1">
+        <option>Pudding trứng</option>
+        <option>Pudding hồng trà</option>
+        <option>Tàu hũ Singapore</option>
+      </select>
+
+      <label>Tráng miệng 2</label>
+      <select id="comboDessert2">
+        <option>Pudding trứng</option>
+        <option>Pudding hồng trà</option>
+        <option>Tàu hũ Singapore</option>
+      </select>
+    `;
   }
 }
+
 
 function addSingleToCart(){
   cart.push({
@@ -212,24 +237,29 @@ function addSingleToCart(){
   });
   alert('Đã thêm');
 }
-
 function addComboToCart(){
   const iceEl = document.getElementById('comboIce');
   const jellyEl = document.getElementById('comboJelly');
-  const dessertEl = document.getElementById('comboDessert');
+  const d1 = document.getElementById('comboDessert1');
+  const d2 = document.getElementById('comboDessert2');
 
   cart.push({
     loai:'Combo',
     noiDung: comboType.value,
     chiTiet:{
-      trangmieng: dessertEl ? dessertEl.value : '',
+      trangmieng:
+        comboType.value === 'Combo 2'
+          ? `[${d1.value}, ${d2.value}]`
+          : d1 ? `[${d1.value}]` : '',
       da: iceEl ? iceEl.value : '',
       thach: jellyEl ? jellyEl.value : ''
     },
     soLuong: comboQty.value
   });
-  alert('Đã thêm');
+
+  alert('Đã thêm combo');
 }
+
 
 function renderCart(){
   cartTable.innerHTML='';
@@ -281,6 +311,7 @@ console.assert(typeof submitCart === 'function','submitCart should exist');
 </script>
 </body>
 </html>
+
 
 
 
