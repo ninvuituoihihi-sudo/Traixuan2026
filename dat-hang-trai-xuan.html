@@ -133,6 +133,8 @@ button:active {
 <script>
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxqbfyylKyqytrKI9Bg_6x0cjMVXTjwwbY4NWWTjxnoRtLwsn_ZuJWWC7CqoUWmNnqHaw/exec';
 let cart = [];
+let editingComboIndex = null;
+
 
 window.onload = () => {
   const c = JSON.parse(localStorage.getItem('customer'));
@@ -143,6 +145,51 @@ window.onload = () => {
     pickupTime.value=c.gio;
   }
 };
+function editCombo(index){
+  const item = cart[index];
+
+  if(item.loai !== 'Combo') return;
+
+  // Lưu index đang sửa
+  editingComboIndex = index;
+
+  // Chuyển sang tab combo
+  showSection('combo');
+
+  // Set combo
+  comboType.value = item.noiDung;
+  renderComboOptions();
+
+  // Set số lượng
+  comboQty.value = item.soLuong;
+
+  // Set chi tiết
+  setTimeout(() => {
+    if(item.chiTiet.trangmieng){
+      const dessertEl = document.getElementById('comboDessert');
+      if(dessertEl){
+        if(Array.isArray(item.chiTiet.trangmieng)){
+          dessertEl.value = item.chiTiet.trangmieng[0];
+        } else {
+          dessertEl.value = item.chiTiet.trangmieng;
+        }
+      }
+    }
+
+    if(item.chiTiet.da){
+      const iceEl = document.getElementById('comboIce');
+      if(iceEl) iceEl.value = item.chiTiet.da;
+    }
+
+    if(item.chiTiet.thach){
+      const jellyEl = document.getElementById('comboJelly');
+      if(jellyEl) jellyEl.value = item.chiTiet.thach;
+    }
+  }, 50);
+
+  // Xóa combo cũ khỏi giỏ
+  cart.splice(index, 1);
+}
 
 function saveCustomer(){
   if(!customerName.value||!classAddress.value||!campName.value||!pickupTime.value){
@@ -240,50 +287,70 @@ function addSingleToCart(){
 function addComboToCart(){
   const iceEl = document.getElementById('comboIce');
   const jellyEl = document.getElementById('comboJelly');
-  const d1 = document.getElementById('comboDessert1');
-  const d2 = document.getElementById('comboDessert2');
+  const dessertEl = document.getElementById('comboDessert');
 
-  cart.push({
+  const newItem = {
     loai:'Combo',
     noiDung: comboType.value,
     chiTiet:{
-      trangmieng:
-        comboType.value === 'Combo 2'
-          ? `[${d1.value}, ${d2.value}]`
-          : d1 ? `[${d1.value}]` : '',
-      da: iceEl ? iceEl.value : '',
-      thach: jellyEl ? jellyEl.value : ''
+      trangmieng: dessertEl ? dessertEl.value : '',
+      da: iceEl ? iceEl.value : 'Đá bình thường',
+      thach: jellyEl ? jellyEl.value : 'Thạch bình thường'
     },
     soLuong: comboQty.value
-  });
+  };
 
-  alert('Đã thêm combo');
+  cart.push(newItem);
+
+  editingComboIndex = null;
+
+  alert('Đã cập nhật combo');
+}
+
+function formatComboDetail(chiTiet){
+  let result = '';
+
+  if(chiTiet.trangmieng){
+    result += `Tráng miệng: ${chiTiet.trangmieng}`;
+  }
+
+  if(chiTiet.da || chiTiet.thach){
+    result += `<br>Nước: ${chiTiet.da || ''}${chiTiet.thach ? ', ' + chiTiet.thach : ''}`;
+  }
+
+  return result;
 }
 
 
 function renderCart(){
-  cartTable.innerHTML='';
-  cart.forEach((c,i)=>{
-    cartTable.innerHTML+=`
+  cartTable.innerHTML = '';
+
+  cart.forEach((c, i) => {
+    let displayName = c.noiDung;
+
+    if(c.loai === 'Combo' && c.chiTiet){
+      displayName += `<br><small style="color:#555">
+        ${formatComboDetail(c.chiTiet)}
+      </small>`;
+    }
+
+    cartTable.innerHTML += `
       <tr>
         <td>${c.loai}</td>
-        <td>${c.noiDung}</td>
+        <td>${displayName}</td>
         <td>${c.soLuong}</td>
-        <td><button onclick="cart.splice(${i},1);renderCart()">Xóa</button></td>
-      </tr>`;
+        <td>
+          ${c.loai === 'Combo'
+            ? `<button onclick="editCombo(${i})">Sửa combo</button>`
+            : ''
+          }
+          <button onclick="cart.splice(${i},1);renderCart()">Xóa</button>
+        </td>
+      </tr>
+    `;
   });
 }
 
-function submitCart(){
-  const customer = JSON.parse(localStorage.getItem('customer'));
-  if(!customer){
-    alert('Vui lòng lưu thông tin nhận hàng trước');
-    return;
-  }
-  if(cart.length === 0){
-    alert('Giỏ hàng trống');
-    return;
-  }
 
   fetch(SHEET_URL,{
     method:'POST',
@@ -311,6 +378,7 @@ console.assert(typeof submitCart === 'function','submitCart should exist');
 </script>
 </body>
 </html>
+
 
 
 
