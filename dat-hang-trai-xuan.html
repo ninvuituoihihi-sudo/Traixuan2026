@@ -6,56 +6,92 @@
 <title>Đặt món hội trại</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f4f4}
-nav{background:#222;padding:10px;display:flex;justify-content:space-around;position:sticky;top:0}
-nav button{background:none;border:none;color:#fff;font-size:14px}
+body{
+  font-family:'Segoe UI',Arial;
+  margin:0;
+  background:linear-gradient(180deg,#fff,#f2f2f2);
+}
 
-.container{padding:12px}
-.card{background:#fff;padding:14px;border-radius:10px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+nav{
+  background:#1f1f1f;
+  padding:10px;
+  display:flex;
+  justify-content:space-around;
+  position:sticky;
+  top:0;
+}
+
+nav button{
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:14px;
+}
+
+.container{padding:14px}
+
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:14px;
+  margin-bottom:14px;
+  box-shadow:0 6px 20px rgba(0,0,0,.12);
+}
+
 h2{margin:0 0 10px;font-size:18px}
-label{display:block;margin-top:8px;font-weight:600;font-size:14px}
-select,input{width:100%;padding:10px;margin-top:4px;font-size:14px;border-radius:6px;border:1px solid #ccc}
+
+label{display:block;margin-top:10px;font-weight:600;font-size:14px}
+
+select,input{
+  width:100%;
+  padding:10px;
+  margin-top:4px;
+  font-size:14px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
 
 button{
   width:100%;
   padding:12px;
-  margin-top:12px;
+  margin-top:14px;
   font-size:15px;
   border:none;
-  border-radius:8px;
-  background:#ff5722;
+  border-radius:10px;
+  background:linear-gradient(135deg,#ff5722,#ff784e);
   color:#fff;
   cursor:pointer;
-  transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  transition:.15s;
 }
-button.secondary{background:#555}
 
-button:hover{
-  filter:brightness(1.08);
-  box-shadow:0 6px 12px rgba(0,0,0,.18);
-}
-button:active{
-  transform:scale(.96);
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.25);
-}
+button:hover{filter:brightness(1.1);box-shadow:0 6px 14px rgba(0,0,0,.2)}
+button:active{transform:scale(.96)}
 
 .hidden{display:none}
-.qty{display:flex;gap:10px;justify-content:center;margin-top:6px}
+
+.qty{display:flex;gap:12px;justify-content:center;margin-top:8px}
 .qty button{width:36px;height:36px;border-radius:50%;padding:0}
 
 table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
-th,td{border-bottom:1px solid #ddd;padding:6px;text-align:left}
+th,td{border-bottom:1px solid #ddd;padding:8px}
 th{background:#fafafa}
-small{color:#555}
+
+.badge{
+  display:inline-block;
+  background:#eee;
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
 </style>
 </head>
 
 <body>
 
 <nav>
-  <button onclick="showSection('single')">Món lẻ</button>
-  <button onclick="showSection('combo')">Combo</button>
-  <button onclick="showSection('cart')">Giỏ hàng</button>
+<button onclick="showSection('single')">Món lẻ</button>
+<button onclick="showSection('combo')">Combo</button>
+<button onclick="showSection('cart')">Giỏ hàng</button>
 </nav>
 
 <div class="container">
@@ -63,8 +99,8 @@ small{color:#555}
 <div class="card">
 <h2>Thông tin nhận hàng</h2>
 <label>Tên khách *</label><input id="customerName">
-<label>Lớp / địa chỉ lớp *</label><input id="classAddress">
-<label>Link Facebook *</label><input id="campName">
+<label>Lớp / địa chỉ *</label><input id="classAddress">
+<label>Facebook *</label><input id="campName">
 <label>Khung giờ *</label>
 <select id="pickupTime">
 <option value="">-- Chọn --</option>
@@ -74,14 +110,13 @@ small{color:#555}
 <option>13:00 – 14:00</option>
 <option>14:00 – 15:00</option>
 </select>
-<button class="secondary" onclick="saveCustomer()">Lưu thông tin</button>
+<button onclick="saveCustomer()">Lưu thông tin</button>
 </div>
 
 <div id="single" class="card">
 <h2>Món lẻ</h2>
-<label>Món</label>
-<select id="singleItem" onchange="toggleDrink(this.value)">
-<option value="" disabled selected>Vui lòng chọn món</option>
+<select id="singleItem" onchange="drinkOpt.classList.toggle('hidden',this.value!=='Trà chanh dây')">
+<option disabled selected>Vui lòng chọn món</option>
 <option>Gà</option>
 <option>Pudding trứng</option>
 <option>Pudding hồng trà</option>
@@ -90,73 +125,67 @@ small{color:#555}
 </select>
 
 <div id="drinkOpt" class="hidden">
-<label>Đá</label>
-<select id="singleIce"><option>Đá bình thường</option><option>Ít đá</option><option>Không đá</option></select>
-<label>Thạch</label>
-<select id="singleJelly"><option>Thạch bình thường</option><option>Không thạch</option></select>
+<label>Đá</label><select id="singleIce"><option>Đá bình thường</option><option>Ít đá</option><option>Không đá</option></select>
+<label>Thạch</label><select id="singleJelly"><option>Thạch bình thường</option><option>Không thạch</option></select>
 </div>
 
 <div class="qty">
 <button onclick="changeQty('singleQty',-1)">-</button>
-<input id="singleQty" type="number" value="1" min="1">
+<input id="singleQty" value="1">
 <button onclick="changeQty('singleQty',1)">+</button>
 </div>
 
-<button onclick="addSingle()">Thêm vào giỏ</button>
+<button onclick="addSingle()">Thêm</button>
 </div>
 
 <div id="combo" class="card hidden">
 <h2>Combo</h2>
 <select id="comboType" onchange="renderCombo()">
-<option value="" disabled selected>Vui lòng chọn combo</option>
+<option disabled selected>Vui lòng chọn combo</option>
 <option>Combo 1</option>
 <option>Combo 2</option>
 <option>Combo 3</option>
 </select>
-
 <div id="comboOpt"></div>
 
 <div class="qty">
 <button onclick="changeQty('comboQty',-1)">-</button>
-<input id="comboQty" type="number" value="1" min="1">
+<input id="comboQty" value="1">
 <button onclick="changeQty('comboQty',1)">+</button>
 </div>
 
-<button onclick="addCombo()">Thêm vào giỏ</button>
+<button onclick="addCombo()">Thêm combo</button>
 </div>
 
 <div id="cart" class="card hidden">
 <h2>Giỏ hàng</h2>
 <table>
-<thead><tr><th>Loại</th><th>Món</th><th>SL</th><th></th></tr></thead>
+<thead><tr><th>Loại</th><th>Chi tiết</th><th>SL</th><th></th></tr></thead>
 <tbody id="cartTable"></tbody>
 </table>
-<button onclick="submitCart()">Xác nhận đặt món</button>
+<button onclick="submitCart()">Xác nhận đặt</button>
 </div>
 
 </div>
 
 <script>
-const SHEET_URL='https://script.google.com/macros/s/AKfycbylLfZ-c1CEQLbp9l0KdS8rsaHYye7JIc8XAktyWwkX40vLU4CkdBiFU1tsWUMpgPzS/exec';
+const SHEET_URL='https://script.google.com/macros/s/AKfycbzIBql5hFmBH2R0vbrCJGiLk-r4PjXCt__WIRL7gaUC0uDwLCDXHqRmdC-X5uoZKNNDNw/exec';
 let cart=[];
 
 function showSection(id){
-['single','combo','cart'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+['single','combo','cart'].forEach(s=>document.getElementById(s).classList.add('hidden'));
 document.getElementById(id).classList.remove('hidden');
 if(id==='cart') renderCart();
 }
 
 function saveCustomer(){
-if(!customerName.value||!classAddress.value||!campName.value||!pickupTime.value)
-return alert('Nhập đủ thông tin');
 localStorage.setItem('customer',JSON.stringify({
-ten:customerName.value,lop:classAddress.value,trai:campName.value,gio:pickupTime.value
+ten:customerName.value,
+lop:classAddress.value,
+trai:campName.value,
+gio:pickupTime.value
 }));
 alert('Đã lưu');
-}
-
-function toggleDrink(v){
-drinkOpt.classList.toggle('hidden',v!=='Trà chanh dây');
 }
 
 function changeQty(id,d){
@@ -166,19 +195,15 @@ i.value=Math.max(1,Number(i.value)+d);
 
 function renderCombo(){
 comboOpt.innerHTML='';
-if(['Combo 1','Combo 3'].includes(comboType.value)){
+if(comboType.value!=='Combo 2'){
 comboOpt.innerHTML+=`
 <label>Đá</label><select id="cIce"><option>Đá bình thường</option><option>Ít đá</option><option>Không đá</option></select>
 <label>Thạch</label><select id="cJelly"><option>Thạch bình thường</option><option>Không thạch</option></select>`;
 }
-if(comboType.value==='Combo 1'){
 comboOpt.innerHTML+=`
-<label>Tráng miệng</label>
-<select id="d1"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>`;
-}
+<label>Tráng miệng 1</label><select id="d1"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>`;
 if(comboType.value==='Combo 2'){
 comboOpt.innerHTML+=`
-<label>Tráng miệng 1</label><select id="d1"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>
 <label>Tráng miệng 2</label><select id="d2"><option>Pudding trứng</option><option>Pudding hồng trà</option><option>Tàu hũ Singapore</option></select>`;
 }
 }
@@ -189,29 +214,32 @@ alert('Đã thêm');
 }
 
 function addCombo(){
-const desserts=[];
-if(window.d1) desserts.push(d1.value);
+const desserts=[d1.value];
 if(window.d2) desserts.push(d2.value);
 cart.push({
 loai:'Combo',
 noiDung:comboType.value,
-chiTiet:{trangmieng:desserts,da:cIce?.value,thach:cJelly?.value},
+chiTiet:{
+trangmieng:desserts,
+da:window.cIce?.value||'',
+thach:window.cJelly?.value||''
+},
 soLuong:comboQty.value
 });
-alert('Đã thêm');
+alert('Đã thêm combo');
 }
 
 function renderCart(){
 cartTable.innerHTML='';
 cart.forEach((c,i)=>{
-let detail='';
-if(c.chiTiet){
-detail=`<br><small>Tráng miệng: ${c.chiTiet.trangmieng.join(', ')}<br>Nước: ${c.chiTiet.da||''}, ${c.chiTiet.thach||''}</small>`;
-}
 cartTable.innerHTML+=`
 <tr>
 <td>${c.loai}</td>
-<td>${c.noiDung}${detail}</td>
+<td>
+<b>${c.noiDung}</b><br>
+<span class="badge">Tráng miệng: ${c.chiTiet?.trangmieng.join(', ')||''}</span><br>
+${c.chiTiet?.da?`<span class="badge">Nước: ${c.chiTiet.da}, ${c.chiTiet.thach}</span>`:''}
+</td>
 <td>${c.soLuong}</td>
 <td><button onclick="cart.splice(${i},1);renderCart()">Xóa</button></td>
 </tr>`;
@@ -220,15 +248,17 @@ cartTable.innerHTML+=`
 
 function submitCart(){
 const customer=JSON.parse(localStorage.getItem('customer'));
-if(!customer||!cart.length) return alert('Thiếu thông tin');
-fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify({customer,cart})})
-.then(()=>{
+fetch(SHEET_URL,{
+method:'POST',
+mode:'no-cors',
+body:JSON.stringify({customer,cart})
+}).then(()=>{
 localStorage.clear();
 cart=[];
 location.href='thankyou.html';
 });
 }
 </script>
+
 </body>
 </html>
-
